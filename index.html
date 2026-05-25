@@ -153,7 +153,8 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
 }
 #endlessResultScreen{background:#03020f;}
 .erl-wrap{position:relative;z-index:5;display:grid;grid-template-columns:1fr 1fr;
-  width:94%;max-width:860px;gap:12px;align-items:stretch;}
+  width:94%;max-width:860px;gap:12px;align-items:stretch;
+  box-sizing:border-box;}
 .erl-left{display:flex;flex-direction:column;gap:8px;}
 .erl-level-panel{background:rgba(0,12,40,0.9);border:1px solid rgba(255,200,0,0.5);
   padding:14px 18px;text-align:center;
@@ -1054,22 +1055,27 @@ function resize(){
 window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', ()=>setTimeout(resize, 150));
 
-// ─── res-wrap全体を画面高さに収まるようscaleで制御 ───
+// ─── res-wrap / erl-wrap 全体を画面高さに収まるようscaleで制御 ───
 function scaleResWrap(){
-  const wrap = document.getElementById('resultScreen')?.querySelector('.res-wrap');
-  if(!wrap) return;
-  wrap.style.transform = '';
-  wrap.style.transformOrigin = '';
-  const naturalH = wrap.offsetHeight;
-  const naturalW = wrap.offsetWidth;
-  if(!naturalH || !naturalW) return;
-  const availH = _gameH * 0.92;
-  const availW = _gameW * 0.94;
-  const scale = Math.min(availH / naturalH, availW / naturalW, 1);
-  if(scale < 1){
-    wrap.style.transform = `scale(${scale.toFixed(4)})`;
-    wrap.style.transformOrigin = 'center center';
-  }
+  const targets=[
+    document.getElementById('resultScreen')?.querySelector('.res-wrap'),
+    document.getElementById('endlessResultScreen')?.querySelector('.erl-wrap'),
+  ];
+  targets.forEach(wrap=>{
+    if(!wrap) return;
+    wrap.style.transform='';
+    wrap.style.transformOrigin='';
+    const naturalH=wrap.offsetHeight;
+    const naturalW=wrap.offsetWidth;
+    if(!naturalH||!naturalW) return;
+    const availH=_gameH*0.92;
+    const availW=_gameW*0.94;
+    const scale=Math.min(availH/naturalH,availW/naturalW,1);
+    if(scale<1){
+      wrap.style.transform=`scale(${scale.toFixed(4)})`;
+      wrap.style.transformOrigin='center center';
+    }
+  });
 }
 
 // ─── チュートリアルカード全体を画面サイズに収まるようscaleで制御 ───
@@ -2023,6 +2029,7 @@ function showEndlessResult(){
   }
 
   showScreen('endlessResult');
+  requestAnimationFrame(()=>requestAnimationFrame(scaleResWrap));
   if(raf) cancelAnimationFrame(raf);
   lastT=performance.now();
   raf=requestAnimationFrame(resultLoop);
