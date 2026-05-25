@@ -1001,6 +1001,7 @@ const LEVEL_KCAL_STEP  = 10000;
 
 let endlessRushActive=false, endlessRushTimer=0, endlessRushDur=0;
 let endlessNextRush=0;
+let _enemyFreezeTimer=0;
 let gs={stage:0};
 let enemies=[],bullets=[],parts=[],floats=[];
 let spawnT=0,lastT=0,raf=null;
@@ -1825,6 +1826,7 @@ function startEndless(){
   enemies=[];bullets=[];parts=[];floats=[];
   spawnT=0;shakeMag=0;cdActive=false;
   endlessRushActive=false;endlessRushTimer=0;
+  _enemyFreezeTimer=0;
   endlessNextRush=getNextRushInterval();
 
   if(cdTimer){clearTimeout(cdTimer);cdTimer=null;}
@@ -1980,17 +1982,30 @@ function applyItemEffect(def,ex,ey){
   } else if(def.itemType==='bomb'){
     addFloat(ex,ey,'ALL ENEMIES -1HP!','#ff8844');
     doShake(10);
+    // 敵数に応じたフリーズ時間を決定
+    const freezeDur = enemies.length >= 10 ? 1.5 : 0.8;
+    _enemyFreezeTimer = freezeDur;
+    // ダメージは即時適用
+    const burstTargets=[];
     for(let i=enemies.length-1;i>=0;i--){
       const e=enemies[i];
       e.hp--;e.hitFlash=1;
-      doBurst(e.x,e.y,e.def.color,4);
+      burstTargets.push({x:e.x,y:e.y,color:e.def.color,dead:e.hp<=0});
       if(e.hp<=0){
         gs.score+=Math.max(0,e.def.kcal);gs.kills++;
         addCombo();
-        doDeathBurst(e.x,e.y,e.def.color);
         enemies.splice(i,1);
       }
     }
+    // 遅延エフェクト：ラグを置いてからバコン系爆発を各敵位置で発火
+    const delayMs = Math.round(freezeDur * 0.4 * 1000);
+    setTimeout(()=>{
+      burstTargets.forEach(t=>{
+        if(t.dead) doDeathBurst(t.x,t.y,t.color);
+        else doBurst(t.x,t.y,t.color,6);
+      });
+      doShake(8);
+    }, delayMs);
   }
 }
 
@@ -2195,9 +2210,11 @@ function spawnEnemy(){
    UPDATE
 ═══════════════════════════════════════════════ */
 function updateEnemies(dt){
+  if(_enemyFreezeTimer>0) _enemyFreezeTimer=Math.max(0,_enemyFreezeTimer-dt);
+  const frozen=_enemyFreezeTimer>0;
   for(let i=enemies.length-1;i>=0;i--){
     const e=enemies[i];
-    e.progress+=dt/e.approachSec;
+    if(!frozen) e.progress+=dt/e.approachSec;
     if(e.hitFlash>0)e.hitFlash=Math.max(0,e.hitFlash-dt*6);
     const tta=(1-e.progress)*e.approachSec;
     if(tta<=CFG.WARN_TIME)e.warnPhase+=dt*7;
