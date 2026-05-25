@@ -540,7 +540,7 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
   flex-shrink:0;
   -webkit-tap-highlight-color:transparent;
 }
-#tut-toggle-switch.on{background:#1d9e75;}
+#tut-toggle-switch.on{background:#0099aa;}
 #tut-toggle-knob{
   position:absolute;top:3px;left:3px;
   width:16px;height:16px;border-radius:50%;
@@ -1264,7 +1264,11 @@ function buildCards(){
     const card = e.target.closest('.sc');
     if (!card || card.classList.contains('sc-locked')) return;
     const idx = card.dataset.stageIdx;
-    if (idx !== undefined) { showTutorial(Number(idx)); return; }
+    if (idx !== undefined) {
+      if(Save.getTutOn()) showTutorial(Number(idx));
+      else startGame(Number(idx));
+      return;
+    }
     if (card.dataset.endless === '1') {
       if(Save.getTutOn()) showEndlessTutorial();
       else startEndless();
@@ -1318,8 +1322,8 @@ function buildCards(){
   endlessWrap.appendChild(ec);
   g.appendChild(endlessWrap);
 
-  // ─── チュートリアルON/OFFトグル ───
-  if(unlocked){
+  // ─── チュートリアルON/OFFトグル（常時表示）───
+  {
     const tw=document.createElement('div');
     tw.id='tut-toggle-wrap';
     const lbl=document.createElement('span');
