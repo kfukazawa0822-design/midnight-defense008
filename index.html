@@ -1072,6 +1072,12 @@ window.addEventListener('orientationchange', ()=>setTimeout(resize, 150));
 
 // ─── res-wrap / erl-wrap を画面に収まるようscaleで制御 ───
 function scaleResWrap(){
+  // 縦持ち時はwrapperがrotate(-90deg)されているため_gameW/_gameHは
+  // 回転前のDOM空間の値。実際の可視領域はinnerWidth/innerHeightで取る。
+  const visW = window.innerWidth;
+  const visH = window.innerHeight;
+  const availW = visW * 0.96;
+  const availH = visH * 0.96;
   [
     document.getElementById('resultScreen')?.querySelector('.res-wrap'),
     document.getElementById('endlessResultScreen')?.querySelector('.erl-wrap'),
@@ -1082,10 +1088,14 @@ function scaleResWrap(){
     const naturalH=wrap.offsetHeight;
     const naturalW=wrap.offsetWidth;
     if(!naturalH||!naturalW) return;
-    const availH=_gameH*0.96;
-    const availW=_gameW*0.96;
-    const scale=Math.min(availH/naturalH, availW/naturalW, 1);
-    if(scale<1){
+    // offsetWidthはDOM空間の値なのでvisWと直接比較できない。
+    // 縦持ち時はwrapperが90度回転しており、DOM上のwidthが実際の画面heightに相当する。
+    // そのためwrapの可視幅=naturalW（DOM幅）、可視高さ=naturalH（DOM高さ）のまま
+    // availの軸を入れ替えて比較する。
+    const scaleW = _portrait ? availH / naturalW : availW / naturalW;
+    const scaleH = _portrait ? availW / naturalH : availH / naturalH;
+    const scale = Math.min(scaleW, scaleH, 1);
+    if(scale < 1){
       wrap.style.transform=`scale(${scale.toFixed(4)})`;
       wrap.style.transformOrigin='center center';
     }
