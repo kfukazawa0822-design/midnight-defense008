@@ -433,7 +433,6 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
   display:grid;
   grid-template-columns:1fr 1fr;
   width:94%;max-width:860px;
-  max-height:92vh;
   gap:clamp(4px,1vh,12px);align-items:stretch;
   box-sizing:border-box;
 }
@@ -585,20 +584,6 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
     gap: 8px;
     width: 100%;
     max-width: none;
-  }
-  .res-wrap,
-  .erl-wrap {
-    grid-template-columns: 1fr;
-    width: 92%;
-    gap: 6px;
-    overflow-y: auto;
-    max-height: 96%;
-  }
-  .res-right,
-  .res-asset-slot,
-  #endlessResSlot {
-    min-height: clamp(60px,15vw,120px);
-    max-height: 20vw;
   }
 }
 
@@ -1072,12 +1057,8 @@ window.addEventListener('orientationchange', ()=>setTimeout(resize, 150));
 
 // ─── res-wrap / erl-wrap を画面に収まるようscaleで制御 ───
 function scaleResWrap(){
-  // 縦持ち時はwrapperがrotate(-90deg)されているため_gameW/_gameHは
-  // 回転前のDOM空間の値。実際の可視領域はinnerWidth/innerHeightで取る。
-  const visW = window.innerWidth;
-  const visH = window.innerHeight;
-  const availW = visW * 0.96;
-  const availH = visH * 0.96;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
   [
     document.getElementById('resultScreen')?.querySelector('.res-wrap'),
     document.getElementById('endlessResultScreen')?.querySelector('.erl-wrap'),
@@ -1085,19 +1066,23 @@ function scaleResWrap(){
     if(!wrap) return;
     wrap.style.transform='';
     wrap.style.transformOrigin='';
-    const naturalH=wrap.offsetHeight;
-    const naturalW=wrap.offsetWidth;
-    if(!naturalH||!naturalW) return;
-    // offsetWidthはDOM空間の値なのでvisWと直接比較できない。
-    // 縦持ち時はwrapperが90度回転しており、DOM上のwidthが実際の画面heightに相当する。
-    // そのためwrapの可視幅=naturalW（DOM幅）、可視高さ=naturalH（DOM高さ）のまま
-    // availの軸を入れ替えて比較する。
-    const scaleW = _portrait ? availH / naturalW : availW / naturalW;
-    const scaleH = _portrait ? availW / naturalH : availH / naturalH;
-    const scale = Math.min(scaleW, scaleH, 1);
+    const domW = wrap.offsetWidth;
+    const domH = wrap.offsetHeight;
+    if(!domW || !domH) return;
+    let scale;
+    if(_portrait){
+      // rotate(-90deg)によりDOM幅→画面縦方向、DOM高さ→画面横方向に対応
+      const sW = vh * 0.96 / domW;
+      const sH = vw * 0.96 / domH;
+      scale = Math.min(sW, sH, 1);
+    } else {
+      const sW = vw * 0.96 / domW;
+      const sH = vh * 0.96 / domH;
+      scale = Math.min(sW, sH, 1);
+    }
     if(scale < 1){
-      wrap.style.transform=`scale(${scale.toFixed(4)})`;
-      wrap.style.transformOrigin='center center';
+      wrap.style.transform = `scale(${scale.toFixed(4)})`;
+      wrap.style.transformOrigin = 'center center';
     }
   });
 }
