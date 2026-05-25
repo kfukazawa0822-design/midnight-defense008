@@ -39,6 +39,7 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .screen.active {
@@ -434,6 +435,7 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
   width:94%;max-width:860px;
   max-height:92vh;
   gap:clamp(4px,1vh,12px);align-items:stretch;
+  box-sizing:border-box;
 }
 .res-left{display:flex;flex-direction:column;gap:clamp(3px,0.8vh,8px);}
 .res-score-panel{
@@ -577,13 +579,26 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
 }
 
 @media (max-width: 600px) {
-  .res-wrap,
   .stage-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  width: 100%;
-  max-width: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    max-width: none;
+  }
+  .res-wrap,
+  .erl-wrap {
+    grid-template-columns: 1fr;
+    width: 92%;
+    gap: 6px;
+    overflow-y: auto;
+    max-height: 96%;
+  }
+  .res-right,
+  .res-asset-slot,
+  #endlessResSlot {
+    min-height: clamp(60px,15vw,120px);
+    max-height: 20vw;
   }
 }
 
@@ -1055,22 +1070,21 @@ function resize(){
 window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', ()=>setTimeout(resize, 150));
 
-// ─── res-wrap / erl-wrap 全体を画面高さに収まるようscaleで制御 ───
+// ─── res-wrap / erl-wrap を画面に収まるようscaleで制御 ───
 function scaleResWrap(){
-  const targets=[
+  [
     document.getElementById('resultScreen')?.querySelector('.res-wrap'),
     document.getElementById('endlessResultScreen')?.querySelector('.erl-wrap'),
-  ];
-  targets.forEach(wrap=>{
+  ].forEach(wrap=>{
     if(!wrap) return;
     wrap.style.transform='';
     wrap.style.transformOrigin='';
     const naturalH=wrap.offsetHeight;
     const naturalW=wrap.offsetWidth;
     if(!naturalH||!naturalW) return;
-    const availH=_gameH*0.92;
-    const availW=_gameW*0.94;
-    const scale=Math.min(availH/naturalH,availW/naturalW,1);
+    const availH=_gameH*0.96;
+    const availW=_gameW*0.96;
+    const scale=Math.min(availH/naturalH, availW/naturalW, 1);
     if(scale<1){
       wrap.style.transform=`scale(${scale.toFixed(4)})`;
       wrap.style.transformOrigin='center center';
