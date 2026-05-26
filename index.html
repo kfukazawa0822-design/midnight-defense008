@@ -150,7 +150,7 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
 }
 #ui-survive{
   color:rgba(0,200,255,0.7);font-size:clamp(8px,1.3vw,11px);
-  font-family:'Share Tech Mono',monospace;letter-spacing:2px;margin-top:1px;
+  font-family:'Orbitron',monospace;letter-spacing:2px;margin-top:1px;
 }
 #endlessResultScreen{background:#03020f;}
 .erl-wrap{position:relative;z-index:5;display:grid;grid-template-columns:1fr 1fr;
@@ -611,7 +611,7 @@ canvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
 #hp-out::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 18px,rgba(0,200,255,0.06) 18px,rgba(0,200,255,0.06) 19px);}
 #hp-in{height:100%;transition:width 0.22s,background 0.3s;position:relative;}
 #hp-in::after{content:'';position:absolute;inset:0 0 50% 0;background:rgba(255,255,255,0.18);}
-#txt-hp{color:rgba(0,200,255,0.6);font-size:clamp(7px,1vw,9px);text-align:center;margin-top:3px;letter-spacing:2px;}
+#txt-hp{color:rgba(0,200,255,0.6);font-size:clamp(7px,1vw,9px);text-align:center;margin-top:3px;letter-spacing:2px;font-family:'Orbitron',monospace;}
 
 #topRight{position:absolute;top:8px;right:10px;text-align:right;}
 #ui-stage{
@@ -2696,7 +2696,7 @@ function triggerRushEntry(){
 
   floats.push({
     x:W/2, y:H*0.42,
-    text:'お腹すいた！！！',
+    text:'⚠食欲制御不能⚠',
     color:'#ff1100',
     life:1.0, vy:-12,
     big:true, hungry:true,
